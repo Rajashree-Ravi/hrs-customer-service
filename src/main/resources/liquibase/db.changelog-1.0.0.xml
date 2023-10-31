@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    <changeSet author="Rajashree Ravi" id="1698744855620-1">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="CUSTOMER" />
+			</not>
+		</preConditions>
+        <createTable tableName="CUSTOMER">
+            <column autoIncrement="true" name="ID" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="CONSTRAINT_5"/>
+            </column>
+            <column name="COUNTRY" type="VARCHAR(255)"/>
+            <column name="EMAIL" type="VARCHAR(255)"/>
+            <column name="NAME" type="VARCHAR(255)"/>
+            <column name="PASSWORD" type="VARCHAR(255)"/>
+            <column name="USERNAME" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Rajashree Ravi" id="1698744855620-2">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="CUSTOMER_GRANTED_AUTHORITIES_LIST" />
+			</not>
+		</preConditions>
+        <createTable tableName="CUSTOMER_GRANTED_AUTHORITIES_LIST">
+            <column name="CUSTOMER_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="GRANTED_AUTHORITIES_LIST" type="VARBINARY(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Rajashree Ravi" id="1698744855620-3">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists indexName="FKLGKGAGXGMINJ5CC8SIUGP47AF_INDEX_C" tableName="CUSTOMER_GRANTED_AUTHORITIES_LIST" />
+			</not>
+		</preConditions>
+        <createIndex indexName="FKLGKGAGXGMINJ5CC8SIUGP47AF_INDEX_C" tableName="CUSTOMER_GRANTED_AUTHORITIES_LIST">
+            <column name="CUSTOMER_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Rajashree Ravi" id="1698744855620-4">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<foreignKeyConstraintExists foreignKeyName="FKLGKGAGXGMINJ5CC8SIUGP47AF" foreignKeyTableName="CUSTOMER_GRANTED_AUTHORITIES_LIST" />
+			</not>
+		</preConditions>
+        <addForeignKeyConstraint baseColumnNames="CUSTOMER_ID" baseTableName="CUSTOMER_GRANTED_AUTHORITIES_LIST" constraintName="FKLGKGAGXGMINJ5CC8SIUGP47AF" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="ID" referencedTableName="CUSTOMER" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
