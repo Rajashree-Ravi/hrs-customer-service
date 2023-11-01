@@ -2,6 +2,8 @@ package com.hrs.customerservice.controllers;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hrs.customerservice.messaging.TopicProducer;
 import com.hrs.customerservice.models.CustomerDto;
 import com.hrs.customerservice.services.CustomerService;
 
@@ -26,9 +29,17 @@ import io.swagger.annotations.ApiResponse;
 @RestController
 @RequestMapping("/api")
 public class CustomerController {
+	
+	private static final Logger log = LoggerFactory.getLogger(CustomerController.class);
 
 	@Autowired
 	private CustomerService customerService;
+
+	private TopicProducer topicProducer;
+	
+	public CustomerController(TopicProducer producer) {
+		this.topicProducer = producer;
+	}
 
 	@GetMapping("/welcome")
 	private ResponseEntity<String> displayWelcomeMessage() {
@@ -50,7 +61,13 @@ public class CustomerController {
 	@ApiResponses(value = { @ApiResponse(code = 201, message = "Successfully registered the customer"),
 			@ApiResponse(code = 500, message = "Application failed to process the request") })
 	private ResponseEntity<CustomerDto> registerCustomer(@RequestBody @Valid CustomerDto customer) {
-		return new ResponseEntity<>(customerService.createCustomer(customer), HttpStatus.CREATED);
+
+		CustomerDto savedCustomer = customerService.createCustomer(customer);
+
+		log.info("Customer registered successfully hence publishing the registration event.");
+		topicProducer.send(savedCustomer);
+		
+		return new ResponseEntity<>(savedCustomer, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
