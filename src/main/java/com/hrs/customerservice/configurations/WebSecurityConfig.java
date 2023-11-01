@@ -22,13 +22,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/api/**").permitAll().antMatchers("/**").authenticated().and()
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
+		http.csrf().disable().authorizeRequests().antMatchers("/api/**").permitAll().antMatchers("/**").authenticated()
+				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
 	}
 
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-		web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
+		web.ignoring().requestMatchers(new AntPathRequestMatcher("/h2-console/**"))
+				.requestMatchers(new AntPathRequestMatcher("/swagger-resources/**"))
+				.requestMatchers(new AntPathRequestMatcher("/swagger-ui.html"))
+				.requestMatchers(new AntPathRequestMatcher("/v2/api-docs"))
+				.requestMatchers(new AntPathRequestMatcher("/webjars/**"));
 	}
 
 	@Override
