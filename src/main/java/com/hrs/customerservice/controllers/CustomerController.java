@@ -1,52 +1,80 @@
 package com.hrs.customerservice.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hrs.customerservice.entities.Customer;
-import com.hrs.customerservice.repositories.CustomerRepository;
+import com.hrs.customerservice.models.CustomerDto;
+import com.hrs.customerservice.services.CustomerService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
+@Api(produces = "application/json", value = "Operations pertaining to manage customers in hotel reservation system")
 @RestController
 @RequestMapping("/api")
 public class CustomerController {
 
 	@Autowired
-	private CustomerRepository customerRepository;
+	private CustomerService customerService;
 
 	@GetMapping("/welcome")
 	private ResponseEntity<String> displayWelcomeMessage() {
 		return new ResponseEntity<>("Welcome to customer service !!", HttpStatus.OK);
 	}
 
+	@GetMapping("/retrieve/{id}")
+	@ApiOperation(value = "Retrieve the customer with the specified customer id", response = ResponseEntity.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved customer"),
+			@ApiResponse(code = 404, message = "Customer with specified customer id not found"),
+			@ApiResponse(code = 500, message = "Application failed to process the request") })
+	private ResponseEntity<CustomerDto> getCustomerById(@PathVariable("id") @Valid long id) {
+		CustomerDto customer = customerService.getCustomerById(id);
+		return new ResponseEntity<>(customer, HttpStatus.OK);
+	}
+
+	@PostMapping("/register")
+	@ApiOperation(value = "Register a new customer", response = ResponseEntity.class)
+	@ApiResponses(value = { @ApiResponse(code = 201, message = "Successfully registered the customer"),
+			@ApiResponse(code = 500, message = "Application failed to process the request") })
+	private ResponseEntity<CustomerDto> registerCustomer(@RequestBody @Valid CustomerDto customer) {
+		return new ResponseEntity<>(customerService.createCustomer(customer), HttpStatus.CREATED);
+	}
+
+	@PutMapping("/update/{id}")
+	@ApiOperation(value = "Update a customer information", response = ResponseEntity.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully updated customer information"),
+			@ApiResponse(code = 404, message = "Customer with specified customer id not found"),
+			@ApiResponse(code = 500, message = "Application failed to process the request") })
+	public ResponseEntity<CustomerDto> updateCustomer(@PathVariable("id") @Valid long id,
+			@RequestBody @Valid CustomerDto customer) {
+		return new ResponseEntity<>(customerService.updateCustomer(id, customer), HttpStatus.OK);
+	}
+
+	@DeleteMapping("/delete/{id}")
+	@ApiOperation(value = "Delete a customer", response = ResponseEntity.class)
+	@ApiResponses(value = { @ApiResponse(code = 204, message = "Successfully deleted customer information"),
+			@ApiResponse(code = 500, message = "Application failed to process the request") })
+	private ResponseEntity<String> deleteCustomer(@PathVariable("id") @Valid long id) {
+		customerService.deleteCustomer(id);
+		return new ResponseEntity<>("Customer deleted successfully", HttpStatus.OK);
+	}
+
 	@PostMapping("/test")
-	private ResponseEntity<String> save() {
-
-		GrantedAuthority grantedAuthorityAdmin = new SimpleGrantedAuthority("ROLE_ADMIN");
-		List<GrantedAuthority> grantedAuthorityListAdmin = new ArrayList<>();
-		grantedAuthorityListAdmin.add(grantedAuthorityAdmin);
-
-		Customer admin = new Customer("admin", "$2a$12$0d6AcE1NETW7lpc4hBXYu.o17T00scSL1KVVRh07LGd2Ai8JxzNx2",
-				grantedAuthorityListAdmin, "Admin", "hrs.admin@gmail.com");
-		customerRepository.save(admin);
-
-		GrantedAuthority grantedAuthorityUser = new SimpleGrantedAuthority("ROLE_USER");
-		List<GrantedAuthority> grantedAuthorityListUser = new ArrayList<>();
-		grantedAuthorityListUser.add(grantedAuthorityUser);
-
-		Customer user = new Customer("user", "$2a$12$GPDdAx474QC.0DpwyVoG2.nH9kwb9.H6.XUIrqznfPo2.zYJhcEzS",
-				grantedAuthorityListUser, "User", "hrs.user@gmail.com");
-		customerRepository.save(user);
-
+	private ResponseEntity<String> createTestCustomers() {
+		customerService.createTestCustomers();
 		return new ResponseEntity<>("Customers Created !!", HttpStatus.OK);
 	}
 

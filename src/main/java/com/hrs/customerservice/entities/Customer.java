@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import javax.persistence.JoinColumn;
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -32,20 +33,22 @@ public class Customer {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank
+	@NotBlank(message="Invalid username: Username may not be blank.")
+	@Column(unique = true)
 	private String username;
 
-	@NotBlank
+	@NotBlank(message="Invalid password: Password may not be blank.")
 	private String password;
 
 	@ElementCollection(targetClass = GrantedAuthority.class, fetch = FetchType.EAGER)
 	@CollectionTable(name = "CUSTOMER_GRANTED_AUTHORITIES_LIST", joinColumns = @JoinColumn(name = "CUSTOMER_ID"))
 	private Collection<GrantedAuthority> grantedAuthoritiesList = new ArrayList<>();
 
-	@NotBlank
+	@NotBlank(message="Invalid name: Name may not be blank.")
 	private String name;
 
-	@Email(message = "Enter valid email")
+	@NotBlank(message="Invalid email: Email may not be blank.")
+	@Email(message = "Invalid email: Enter valid email")
 	private String email;
 
 	private String country;
